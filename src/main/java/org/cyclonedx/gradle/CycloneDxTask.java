@@ -66,6 +66,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -675,8 +676,15 @@ public class CycloneDxTask extends DefaultTask {
                 bom.setSerialNumber("urn:uuid:" + UUID.randomUUID());
             }
             bom.setMetadata(metadata);
-            bom.setComponents(new ArrayList<>(components));
-            bom.setDependencies(new ArrayList<>(dependencies));
+
+            ArrayList<Component> componentsList = new ArrayList<>(components);
+            componentsList.sort(Comparator.comparing(Component::getPurl));
+            bom.setComponents(componentsList);
+
+            ArrayList<org.cyclonedx.model.Dependency> dependenciesList = new ArrayList<>(dependencies);
+            dependenciesList.sort(Comparator.comparing(org.cyclonedx.model.Dependency::getRef));
+            bom.setDependencies(dependenciesList);
+
             if (outputFormat.get().equals("all") || outputFormat.get().equals("xml")) {
                 writeXMLBom(version, bom);
             }
